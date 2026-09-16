@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="PAfro Gestão: precificação, estoque, catálogo, pedidos, financeiro e relatórios da Papel Afro.">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <title>PAfro Gestão v5.2</title>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand-wrap">
+      <img src="logo-pafro.png" class="brand-logo" alt="Papel Afro">
+      <div class="brand-copy"><strong>Gestão</strong><span>Gestão completa da Papel Afro.</span></div>
+    </div>
+    <button class="icon-btn mobile-only menu-toggle" id="menuBtn" aria-label="Abrir menu" aria-expanded="false">☰</button>
+    <div class="header-nav-shell" id="sidebar">
+      <nav id="mainNav" class="header-nav" aria-label="Navegação principal"></nav>
+      <div class="side-note">Dados salvos neste aparelho. Faça backup regularmente.</div>
+    </div>
+  </header>
+
+  <main class="content">
+    <div id="toast" class="toast"></div>
+    <div id="view"></div>
+  </main>
+
+  <div id="modal" class="modal hide" aria-hidden="true"><div class="modal-card" id="modalCard"></div></div>
+  <input id="importFile" type="file" accept="application/json" hidden>
+  <script src="app.js"></script>
+  <script src="v5.js"></script>
+  <script src="v5_2.js"></script>
+</body>
+</html>
