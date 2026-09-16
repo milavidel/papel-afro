@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#ffef21">
+  <meta name="description" content="Calculadora de precificação da PAfro para varejo, atacado e taxas de pagamento.">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <title>PAfro Precifica</title>
+  <style>
+    :root{--yellow:#ffef21;--blue:#07bde9;--pink:#ff26a9;--ink:#171717;--muted:#6b6b6b;--bg:#f7f7f4;--card:#fff;--line:#e8e8e2}
+    *{box-sizing:border-box} body{margin:0;font-family:Montserrat,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+    header{background:var(--yellow);padding:22px 18px 18px;position:sticky;top:0;z-index:5;border-bottom:1px solid #e4d600}
+    header h1{margin:0;font-size:25px} header p{margin:4px 0 0;font-size:13px}
+    main{max-width:780px;margin:auto;padding:18px 14px 90px}.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;margin-bottom:14px;box-shadow:0 3px 12px #00000008}
+    h2{font-size:17px;margin:0 0 14px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.full{grid-column:1/-1}
+    label{display:block;font-size:12px;font-weight:700;margin-bottom:6px}input,select{width:100%;padding:13px;border:1px solid #d7d7d0;border-radius:12px;background:white;font-size:16px}
+    .seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}.seg button,button.action{border:0;border-radius:12px;padding:12px;font-weight:800;cursor:pointer}.seg button.active{background:var(--ink);color:white}.seg button:not(.active){background:#efefe9}
+    button.action{background:var(--ink);color:white;width:100%;font-size:16px}.hint{font-size:12px;color:var(--muted);line-height:1.45;margin:8px 0 0}
+    .result{background:var(--ink);color:#fff;border-radius:20px;padding:20px}.big{font-size:36px;font-weight:900;margin:4px 0}.suggest{font-size:22px;font-weight:900;color:var(--yellow)}
+    .rows{margin-top:15px;border-top:1px solid #ffffff28}.row{display:flex;justify-content:space-between;gap:15px;padding:9px 0;border-bottom:1px solid #ffffff1c;font-size:14px}.row b{text-align:right}
+    .ok{color:#9ef3b0}.warn{color:#ffd166}.tabs{display:flex;gap:8px;margin-bottom:14px}.tabs button{flex:1;padding:11px;border-radius:12px;border:1px solid var(--line);font-weight:800;background:white}.tabs button.active{background:var(--blue);border-color:var(--blue)}
+    footer{text-align:center;color:var(--muted);font-size:11px;padding:12px}
+    @media(max-width:560px){.grid{grid-template-columns:1fr}.full{grid-column:auto}.big{font-size:31px}}
+  </style>
+</head>
+<body>
+<header><h1>PAfro Precifica</h1><p>Preço com lucro, taxas e canal de venda — sem perder margem.</p></header>
+<main>
+  <div class="tabs">
+    <button class="active" id="tabPreco">Formar preço</button>
+    <button id="tabLiquido">Quero receber</button>
+  </div>
+
+  <section class="card" id="formPreco">
+    <h2>1. Custos e margem</h2>
+    <div class="grid">
+      <div><label>Custo do produto (R$)</label><input id="custo" inputmode="decimal" value="18,00"></div>
+      <div><label>Outros custos (R$)</label><input id="outros" inputmode="decimal" value="0,00"></div>
+      <div><label>Margem sobre o custo (%)</label><input id="margem" inputmode="decimal" value="100"></div>
+      <div><label>Tipo de preço</label><select id="tipo"><option>Varejo</option><option>Atacado</option></select></div>
+    </div>
+    <p class="hint">Aqui “margem sobre o custo” funciona como markup: 100% transforma R$ 18 de custo em R$ 36 antes das taxas.</p>
+  </section>
+
+  <section class="card" id="formLiquido" style="display:none">
+    <h2>1. Quanto você quer receber líquido?</h2>
+    <div><label>Valor líquido desejado (R$)</label><input id="liquido" inputmode="decimal" value="100,00"></div>
+  </section>
+
+  <section class="card">
+    <h2>2. Canal e pagamento</h2>
+    <div class="grid">
+      <div class="full"><label>Canal</label>
+        <select id="canal">
+          <option value="online">Loja virtual / Link — Plano Crescimento</option>
+          <option value="custom">Outra taxa / Presencial</option>
+        </select>
+      </div>
+      <div><label>Forma de pagamento</label>
+        <select id="pagamento">
+          <option value="cartao">Cartão de crédito</option>
+          <option value="pix">Pix</option>
+          <option value="boleto">Boleto</option>
+        </select>
+      </div>
+      <div><label>Taxa percentual (%)</label><input id="taxa" inputmode="decimal" value="4,59"></div>
+      <div><label>Taxa fixa (R$)</label><input id="fixa" inputmode="decimal" value="0,50"></div>
+      <div><label>Arredondar preço comercial</label>
+        <select id="arred"><option value="90">Terminar em ,90</option><option value="99">Terminar em ,99</option><option value="inteiro">Próximo real inteiro</option><option value="none">Não arredondar</option></select>
+      </div>
+    </div>
+    <p class="hint" id="notaTaxa">Plano Crescimento: cartão a partir de 4,59% + R$ 0,50. Para parcelamento, troque o percentual pela taxa específica da parcela.</p>
+  </section>
+
+  <button class="action" id="calcular">CALCULAR PREÇO</button>
+
+  <section class="result" style="margin-top:14px" id="resultado">
+    <div style="font-size:12px;opacity:.75">PREÇO MÍNIMO CALCULADO</div>
+    <div class="big" id="minimo">R$ 0,00</div>
+    <div style="font-size:12px;opacity:.75">PREÇO COMERCIAL SUGERIDO</div>
+    <div class="suggest" id="sugerido">R$ 0,00</div>
+    <div class="rows">
+      <div class="row"><span>Custo total</span><b id="rCusto">R$ 0,00</b></div>
+      <div class="row"><span>Valor antes da taxa</span><b id="rBase">R$ 0,00</b></div>
+      <div class="row"><span>Taxa estimada no preço sugerido</span><b id="rTaxa">R$ 0,00</b></div>
+      <div class="row"><span>Recebimento líquido</span><b id="rLiquido">R$ 0,00</b></div>
+      <div class="row"><span>Lucro líquido sobre custos</span><b class="ok" id="rLucro">R$ 0,00</b></div>
+      <div class="row"><span>Margem efetiva sobre a venda</span><b id="rMargem">0%</b></div>
+    </div>
+  </section>
+  <footer>PAfro • Calculadora local. Os dados ficam somente neste dispositivo.</footer>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const n=v=>{v=String(v??'').trim().replace(/\./g,'').replace(',','.');let x=parseFloat(v);return isFinite(x)?x:0};
+const br=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+let mode='preco';
+
+function setMode(m){
+ mode=m; $('formPreco').style.display=m==='preco'?'block':'none'; $('formLiquido').style.display=m==='liquido'?'block':'none';
+ $('tabPreco').classList.toggle('active',m==='preco'); $('tabLiquido').classList.toggle('active',m==='liquido');
+ calcular();
+}
+$('tabPreco').onclick=()=>setMode('preco'); $('tabLiquido').onclick=()=>setMode('liquido');
+
+function aplicarPreset(){
+ if($('canal').value==='online'){
+   if($('pagamento').value==='cartao'){ $('taxa').value='4,59'; $('fixa').value='0,50'; $('notaTaxa').textContent='Plano Crescimento: cartão a partir de 4,59% + R$ 0,50. Para parcelamento, informe a taxa específica.'}
+   if($('pagamento').value==='pix'){ $('taxa').value='1,00'; $('fixa').value='0,00'; $('notaTaxa').textContent='Plano Crescimento: Pix 1% por venda.'}
+   if($('pagamento').value==='boleto'){ $('taxa').value='0,00'; $('fixa').value='2,39'; $('notaTaxa').textContent='Plano Crescimento: boleto R$ 2,39 por pagamento.'}
+ } else {$('notaTaxa').textContent='Informe a taxa percentual e fixa da maquininha/Tap que quiser simular.'}
+ calcular();
+}
+$('canal').onchange=aplicarPreset;$('pagamento').onchange=aplicarPreset;
+
+function roundCommercial(x){
+ const t=$('arred').value;if(t==='none')return Math.ceil(x*100)/100;if(t==='inteiro')return Math.ceil(x);
+ const cents=t==='90'?0.90:0.99; let whole=Math.floor(x); let candidate=whole+cents; if(candidate<x)candidate=whole+1+cents; return Math.round(candidate*100)/100;
+}
+function calcular(){
+ const taxa=n($('taxa').value)/100, fixa=n($('fixa').value);
+ let custo=0, base=0;
+ if(mode==='preco'){custo=n($('custo').value)+n($('outros').value);base=custo*(1+n($('margem').value)/100)}
+ else {base=n($('liquido').value)}
+ const minimo=taxa>=1?0:(base+fixa)/(1-taxa);
+ const sug=roundCommercial(minimo);
+ const fee=sug*taxa+fixa, liquido=sug-fee;
+ const lucro=mode==='preco'?liquido-custo:liquido-base;
+ const margemVenda=mode==='preco'&&sug?lucro/sug*100:0;
+ $('minimo').textContent=br(minimo);$('sugerido').textContent=br(sug);$('rCusto').textContent=mode==='preco'?br(custo):'—';
+ $('rBase').textContent=br(base);$('rTaxa').textContent=br(fee);$('rLiquido').textContent=br(liquido);$('rLucro').textContent=br(lucro);
+ $('rMargem').textContent=mode==='preco'?margemVenda.toFixed(1).replace('.',',')+'%':'—';
+ save();
+}
+$('calcular').onclick=calcular;
+['custo','outros','margem','liquido','taxa','fixa','arred','tipo'].forEach(id=>$(id).addEventListener('input',calcular));
+
+function save(){try{localStorage.setItem('pafro_precifica',JSON.stringify({custo:$('custo').value,outros:$('outros').value,margem:$('margem').value,tipo:$('tipo').value,canal:$('canal').value,pagamento:$('pagamento').value,taxa:$('taxa').value,fixa:$('fixa').value,arred:$('arred').value,liquido:$('liquido').value,mode}))}catch(e){}}
+function load(){try{const d=JSON.parse(localStorage.getItem('pafro_precifica')||'{}');Object.keys(d).forEach(k=>{if($(k)&&k!=='mode')$(k).value=d[k]}); if(d.mode)setMode(d.mode);else calcular()}catch(e){calcular()}}
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}))}
+load();
+</script>
+</body></html>
